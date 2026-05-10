@@ -12,26 +12,41 @@
     // 2. 定義尋找並填入輸入框的函式
     function fillGeminiInput() {
         // Gemini 的輸入框通常是一個 contenteditable 的 div
-        // 選取器：role="textbox" 且 contenteditable="true"
         const inputBox = document.querySelector('div[contenteditable="true"][role="textbox"]');
-        console.log(inputBox);
+        
         if (inputBox) {
-            // 確保輸入框已準備好 (有時候元素存在但尚未綁定事件)
-            // 先聚焦
+            // 確保輸入框已準備好
             inputBox.focus();
 
-            // 設定內容
-            // Gemini 的編輯器通常會把文字包在 <p> 標籤內，但直接純文字通常也能運作
-            // 為了保險，我們先清空再填入
+            // 填入文字
             inputBox.textContent = promptText; 
+            
+            // 觸發 'input' 事件，讓 Gemini 的底層框架 (Angular/Lit) 知道輸入框有內容了
+            // 這會啟用原本反灰的發送按鈕
+            inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            
             console.log('Gemini Prompt Prefill: 成功填入文字');
+
+            // 給予框架一點時間更新狀態，然後模擬按下 Enter 鍵
+            setTimeout(() => {
+                const enterEvent = new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    code: 'Enter',
+                    keyCode: 13,
+                    which: 13,
+                    bubbles: true,
+                    cancelable: true
+                });
+                inputBox.dispatchEvent(enterEvent);
+                console.log('Gemini Prompt Prefill: 自動按下 Enter 送出');
+            }, 150); // 150 毫秒的延遲通常足夠讓 UI 反應
+
             return true; // 成功
         }
         return false; // 尚未找到
     }
 
-    // 3. 嘗試執行
-    // 由於 Gemini 是 SPA (單頁應用)，載入速度不一，我們使用輪詢 (Polling) 直到找到輸入框
+    // 3. 嘗試執行 (輪詢)
     let attempts = 0;
     const maxAttempts = 20; // 最多嘗試 10 秒 (20 * 500ms)
     
@@ -42,6 +57,6 @@
         if (success || attempts >= maxAttempts) {
             clearInterval(intervalId);
         }
-    }, 500); // 每 0.5 秒檢查一次
+    }, 500);
 
 })();
