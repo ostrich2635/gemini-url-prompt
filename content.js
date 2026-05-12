@@ -21,8 +21,7 @@
             // 填入文字
             inputBox.textContent = promptText; 
             
-            // 觸發 'input' 事件，讓 Gemini 的底層框架 (Angular/Lit) 知道輸入框有內容了
-            // 這會啟用原本反灰的發送按鈕
+            // 觸發 'input' 事件，讓 Gemini 的底層框架知道輸入框有內容了
             inputBox.dispatchEvent(new Event('input', { bubbles: true }));
             
             console.log('Gemini Prompt Prefill: 成功填入文字');
@@ -39,7 +38,15 @@
                 });
                 inputBox.dispatchEvent(enterEvent);
                 console.log('Gemini Prompt Prefill: 自動按下 Enter 送出');
-            }, 150); // 150 毫秒的延遲通常足夠讓 UI 反應
+
+                // 移除 URL 中的 prompt 或 q 參數，保持網址列乾淨
+                const url = new URL(window.location);
+                url.searchParams.delete('prompt');
+                url.searchParams.delete('q');
+                window.history.replaceState({}, document.title, url.toString());
+                console.log('Gemini Prompt Prefill: 已清除 URL 參數');
+
+            }, 150); // 150 毫秒的延遲
 
             return true; // 成功
         }
